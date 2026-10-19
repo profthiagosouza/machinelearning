@@ -484,27 +484,150 @@ TukeyHSD(modelo)
 
 ---
 
-## 9. Exercícios de fixação
+## 9. Exercícios de fixação — aplicação ao dataset `mtcars`
 
-1. Um pesquisador registra **aprovado/reprovado** em dois métodos de ensino, com frequências esperadas menores que 5. Qual teste é particularmente indicado?
-2. Uma tabela 2×2 tem totais de linha 10 e 10 e totais de coluna 9 e 11. Quais são as quatro frequências esperadas?
-3. Um teste t resulta em `p = 0.0705`. Podemos afirmar que as médias populacionais são iguais?
-4. Por que o Mann-Whitney com três notas por grupo pode ter `p = 0.10` mesmo sem sobreposição?
-5. A ANOVA fornece `p = 0.027`. Isso demonstra que todos os pares de grupos são diferentes?
-6. Os **mesmos alunos** são avaliados antes e depois. É correto utilizar t para grupos independentes?
-7. Explique por que `p = 0.03` não significa “97% de probabilidade de H₁ ser verdadeira”.
-8. Controle, Tratamento A e Tratamento B representam quantos fatores e níveis se apenas a metodologia varia?
+Nesta atividade, você utilizará o conjunto de dados **`mtcars`**, disponível no R, que reúne informações de **32 automóveis**. O objetivo é formular hipóteses, escolher e executar os cinco testes estudados e interpretar os resultados. Adote **α = 0,05** e hipóteses **bilaterais** quando aplicável.
 
-### Gabarito comentado
+### 9.1 Preparação dos dados
 
-1. **Fisher exato**, especialmente para tabela 2×2 com esperadas pequenas.
-2. **4,5; 5,5; 4,5; 5,5**.
-3. **Não.** Não rejeitar H₀ não prova igualdade.
-4. Com três observações por grupo e sem empates, o menor valor-p bilateral exato é **0,10**.
-5. **Não.** A ANOVA aponta pelo menos uma diferença; usar pós-hoc apropriado, como Tukey.
-6. **Não.** São dados pareados; considerar t pareado.
-7. O valor-p é calculado **supondo H₀**, não estima diretamente a probabilidade de H₁.
-8. **Um fator, três níveis.**
+Execute os comandos e examine a estrutura do conjunto:
+
+```r
+data(mtcars)
+str(mtcars)
+head(mtcars)
+summary(mtcars)
+```
+
+Variáveis utilizadas nos exercícios:
+
+| Variável | Significado | Tipo para esta atividade |
+|---|---|---|
+| `mpg` | Consumo em milhas por galão (maior = mais econômico) | Numérica |
+| `am` | Transmissão: 0 = automática; 1 = manual | Categórica (2 níveis) |
+| `vs` | Configuração do motor: 0 = em V; 1 = em linha | Categórica (2 níveis) |
+| `cyl` | Número de cilindros: 4, 6 ou 8 | Categórica (3 níveis) |
+| `gear` | Número de marchas: 3, 4 ou 5 | Categórica (3 níveis) |
+
+**Importante:** embora `am`, `vs`, `cyl` e `gear` sejam armazenadas como números, nos testes de associação e na ANOVA elas devem ser tratadas como **categorias**. O conjunto é observacional; os resultados não permitem concluir causalidade.
+
+### Exercício 1 — Qui-quadrado de independência
+
+**Pergunta:** existe associação entre o **número de cilindros (`cyl`)** e o **tipo de transmissão (`am`)**?
+
+1. Construa uma tabela de contingência entre `cyl` e `am`.
+2. Calcule as proporções por linha e interprete o padrão observado.
+3. Formule H₀ e H₁.
+4. Execute o Qui-quadrado de Pearson **sem correção de continuidade** e examine as frequências esperadas.
+5. Interprete o valor-p. A aproximação do Qui-quadrado é adequada? Justifique com base nas frequências **esperadas**.
+6. Calcule o **V de Cramér** e interprete a magnitude com cautela.
+
+### Exercício 2 — Fisher exato versus Qui-quadrado
+
+**Pergunta:** existe associação entre a **configuração do motor (`vs`)** e o **tipo de transmissão (`am`)**?
+
+1. Construa a tabela 2×2 e identifique os totais marginais.
+2. Calcule as frequências esperadas do Qui-quadrado.
+3. Execute o **teste exato de Fisher**, o Qui-quadrado sem correção e o Qui-quadrado com correção de Yates.
+4. Compare os valores-p e verifique se a decisão a 5% muda.
+5. Com base nas frequências esperadas, explique se Fisher é necessário ou apenas uma alternativa válida neste caso.
+6. Identifique a **odds ratio** e seu intervalo de confiança retornados por `fisher.test()`; explique por que associação não implica causalidade.
+
+### Exercício 3 — Teste t para dois grupos independentes
+
+**Pergunta:** a **média de `mpg`** difere entre automóveis de transmissão **automática** e **manual**?
+
+1. Identifique o fator, seus níveis e a variável resposta.
+2. Calcule o tamanho amostral, a média e o desvio-padrão de `mpg` em cada grupo.
+3. Construa um boxplot comparativo.
+4. Formule H₀ e H₁.
+5. Execute o **teste t de Welch** (padrão do R) e, para comparação didática, o **t clássico** com variâncias iguais.
+6. Interprete o valor-p, a diferença entre médias e o intervalo de confiança. Explique por que a escolha entre Welch e Student importa.
+
+### Exercício 4 — Mann-Whitney
+
+**Pergunta:** a **distribuição de `mpg`** difere entre automóveis com transmissão automática e manual?
+
+1. Utilize os **mesmos dois grupos** do Exercício 3.
+2. Calcule as medianas e os quartis de `mpg` por grupo.
+3. Formule H₀ e H₁ para o teste de Mann-Whitney.
+4. Execute `wilcox.test()` com teste bilateral. Observe se o R apresenta aviso sobre **empates**.
+5. Interprete o valor-p e compare a conclusão com a do teste t.
+6. Explique por que os dois testes não respondem exatamente à mesma pergunta estatística.
+
+### Exercício 5 — ANOVA de um fator
+
+**Pergunta:** a **média de `mpg`** difere entre automóveis com **3, 4 ou 5 marchas (`gear`)**?
+
+1. Identifique o fator, seus três níveis e a variável resposta.
+2. Calcule as médias e os desvios-padrão de `mpg` por grupo.
+3. Construa um boxplot com os três grupos.
+4. Formule H₀ e H₁.
+5. Execute a **ANOVA de um fator** e interprete o teste F.
+6. Examine os gráficos de resíduos e discuta os pressupostos, considerando os tamanhos dos grupos.
+7. Execute `TukeyHSD()` e identifique quais pares apresentam evidência de diferença, se houver.
+8. Calcule o tamanho de efeito **eta quadrado (η²)** e interprete-o no contexto da amostra.
+
+### 9.2 Roteiro de comandos — apoio à resolução
+
+Os comandos abaixo servem como **ponto de partida**. Os alunos devem interpretar as saídas, verificar pressupostos e responder às questões, não apenas executar as funções.
+
+```r
+# Exercício 1: Qui-quadrado e V de Cramér
+tab1 <- table(mtcars$cyl, mtcars$am)
+prop.table(tab1, 1)
+q1 <- chisq.test(tab1, correct = FALSE)
+q1
+q1$expected
+v_cramer <- sqrt(as.numeric(q1$statistic) /
+                 (sum(tab1) * min(nrow(tab1)-1, ncol(tab1)-1)))
+v_cramer
+
+# Exercício 2: Fisher e comparação
+tab2 <- table(mtcars$vs, mtcars$am)
+q2 <- chisq.test(tab2, correct = FALSE)
+q2$expected
+fisher.test(tab2)
+q2
+chisq.test(tab2)  # correção de Yates em tabela 2x2
+
+# Exercício 3: teste t
+aggregate(mpg ~ am, data = mtcars,
+          FUN = function(x) c(n=length(x), media=mean(x), dp=sd(x)))
+boxplot(mpg ~ factor(am), data = mtcars,
+        names = c("Automatica", "Manual"), ylab = "mpg")
+t.test(mpg ~ am, data = mtcars)                   # Welch
+t.test(mpg ~ am, data = mtcars, var.equal = TRUE) # Student
+
+# Exercício 4: Mann-Whitney
+aggregate(mpg ~ am, data = mtcars, median)
+aggregate(mpg ~ am, data = mtcars, quantile)
+wilcox.test(mpg ~ am, data = mtcars, exact = FALSE)
+
+# Exercício 5: ANOVA de um fator
+dados <- transform(mtcars, gear = factor(gear))
+aggregate(mpg ~ gear, data = dados,
+          FUN = function(x) c(n=length(x), media=mean(x), dp=sd(x)))
+boxplot(mpg ~ gear, data = dados, xlab = "Marchas", ylab = "mpg")
+modelo <- aov(mpg ~ gear, data = dados)
+summary(modelo)
+plot(modelo, which = 1)
+plot(modelo, which = 2)
+TukeyHSD(modelo)
+tabela_anova <- summary(modelo)[[1]]
+eta2 <- tabela_anova[1, "Sum Sq"] / sum(tabela_anova[, "Sum Sq"])
+eta2
+```
+
+### 9.3 Orientações para correção
+
+- **Exercício 1:** H₀ afirma independência entre cilindros e transmissão. Verificar se há frequências esperadas baixas antes de confiar no valor-p aproximado. O V de Cramér mede a intensidade da associação na tabela 3×2.
+- **Exercício 2:** H₀ afirma independência entre configuração do motor e transmissão. Fisher e Qui-quadrado podem produzir valores-p distintos; a comparação deve considerar as frequências esperadas e a correção de Yates, sem assumir que Fisher é obrigatório para toda tabela 2×2.
+- **Exercício 3:** H₀ afirma igualdade das médias populacionais de `mpg`. A interpretação deve apresentar médias por grupo, direção da diferença, valor-p e intervalo de confiança; Welch não pressupõe variâncias iguais.
+- **Exercício 4:** H₀, na formulação usual, afirma igualdade das distribuições de `mpg`. A análise usa postos e não testa diretamente a igualdade de médias. `exact = FALSE` permite uma aproximação na presença de empates.
+- **Exercício 5:** H₀ afirma igualdade das três médias populacionais de `mpg`. A ANOVA global testa se **pelo menos uma** difere; Tukey investiga pares. O eta quadrado descreve a proporção de variação explicada pelo fator no modelo.
+
+**Questão integradora:** os resultados desses testes permitem afirmar que mudar a transmissão ou o número de marchas **causa** mudança no consumo? Justifique considerando o caráter observacional de `mtcars` e possíveis fatores de confusão, como peso (`wt`) e potência (`hp`).
 
 ---
 
